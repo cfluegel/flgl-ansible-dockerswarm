@@ -1,0 +1,27 @@
+---
+- name: Install base playbooks
+  hosts: all
+  remote_user: root
+
+  roles:
+    - base
+    - wireguard-overlay-network
+    - geerlingguy.docker
+
+- name: Install wireguard  playbooks
+  hosts: all
+  remote_user: root
+
+  roles:
+    - wireguard-overlay-network
+  tags:
+    - wireguard
+
+- name: Install gluster playbooks
+  hosts: all
+  remote_user: root
+
+  roles:
+    - glusterfs
+  tags:
+    - gluster

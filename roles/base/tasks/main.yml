@@ -1,0 +1,96 @@
+---
+# tasks file for base
+- name: Update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Update all packages to the latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+
+- name: Install additional packagaes
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ base__packages_debian }}"
+
+- name: Create additional users with sudo permissions
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    state: present
+    create_home: yes
+    append: yes
+    groups:
+      - sudo
+  with_items: "{{ base__users }}"
+  when:
+   - item.username != "root"
+   - item.sudo
+
+- name: Create additional users without sudo permissions
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    state: present
+    create_home: yes
+  with_items: "{{ base__users }}"
+  when:
+   - item.username != "root"
+   - not item.sudo
+
+- name: Add ssh keys to root user
+  ansible.posix.authorized_key:
+    user: "{{ item[0].username }}"
+    state: present
+    key: "{{ item[1] }}"
+  with_subelements:
+    - "{{ base__sshkeys }}"
+    - sshkeys
+  when: item[0].username == "root"
+
+- name: Add ssh keys to the other user
+  ansible.posix.authorized_key:
+    user: "{{ item[0].username }}"
+    state: present
+    key: "{{ item[1] }}"
+  with_subelements:
+    - "{{ base__sshkeys }}"
+    - sshkeys
+  when: item[0].username != "root"
+
+- name: Change the ssh configuration to secure defaults
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    group: root
+    owner: root
+    mode: 0644
+  notify:
+    - "Restart sshd"
+
+- name: Set Timezone
+  community.general.timezone:
+    name: "{{ base__timezone }}"
+
+- name: Set hostname to inventory hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  when: inventory_hostname != ansible_fqdn
+
+- name: Reboot because of name change
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible"
+    connect_timeout: 5
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: whoami
+  when: inventory_hostname != ansible_fqdn
+
+- name: Verify that the server is set to the inventory
+  debug:
+    msg: "Inventory_Hostname & ansible_fqdn: '{{ inventory_hostname }} ' '{{ ansible_fqdn }}'"
+
+- name: Include UFW Base Configuration tasks
+  ansible.builtin.include_tasks: ufw.yml
+  when: base__enableUFW

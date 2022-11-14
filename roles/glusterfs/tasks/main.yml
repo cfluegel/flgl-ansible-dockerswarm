@@ -1,0 +1,142 @@
+---
+## ansible-role-glusterfs geerlingguy https://github.com/geerlingguy/ansible-role-glusterfs/
+- name: Ensure dependencies are installed.
+  apt:
+    name:
+      - gnupg2
+      - apt-transport-https
+      - ca-certificates
+    state: present
+
+- name: Ensure repository pubkey for GlusterFS is present.
+  apt_key:
+    url: 'https://download.gluster.org/pub/gluster/glusterfs/7/rsa.pub'
+    state: present
+  register: glusterfs_pub_key_added
+
+- name: Get the DEB architecture.
+  command: dpkg --print-architecture
+  changed_when: false
+  register: deb_architecture
+
+- name: Ensure debian repo is present.
+  apt_repository:
+    repo: "deb https://download.gluster.org/pub/gluster/glusterfs/LATEST/Debian/\
+      {% if ansible_distribution_major_version|int >= 11 %}{{ ansible_distribution_major_version }}{% else %}{{ ansible_distribution_release }}{% endif %}/{{ deb_architecture.stdout }}/apt {{ ansible_distribution_release }} \
+      main"
+    state: present
+    filename: gluster
+  register: glusterfs_deb_source_added
+
+- name: Ensure GlusterFS will reinstall if the DEB source was just added.
+  apt:
+    name:
+      - glusterfs-server
+      - glusterfs-client
+    state: absent
+  when: glusterfs_deb_source_added.changed
+
+- name: Update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Ensure GlusterFS is installed.
+  apt:
+    name:
+      - glusterfs-server
+      - glusterfs-client
+    state: present
+
+
+# tasks file for glusterfs
+# - name: Install required glusterfs packagaes
+#   ansible.builtin.apt:
+#     name: "{{ item }}"
+#     state: present
+#   with_items: "{{ glusterfs__packages_debian }}"
+
+- name: Enable and start glusterd
+  ansible.builtin.service:
+    enabled: yes
+    state: restarted
+    name: glusterd
+
+- name: Create trusted Storage Pool
+  gluster.gluster.gluster_peer:
+    state: present
+    nodes: "{{ hostvars[item].overlaynetwork_ipv4_address | split('/') | first }}"
+  with_items: " {{ groups['overlaynetwork'] }} "
+  when:
+    - hostvars[item].inventory_hostname != inventory_hostname
+
+# - ansible.builtin.debug:
+#     msg: "{{ hostvars[item].overlaynetwork_ipv4_address | split('/') | first }}"
+#   with_items: "{{ groups['overlaynetwork']  }}"
+#   tags:
+#     - glustertest
+
+- name: "Create GlusterFS base brickdirectory"
+  ansible.builtin.file:
+    state: directory
+    owner: root
+    group: root
+    path: /glusterfs/{{ overlaynetworkname }}/
+
+- ansible.builtin.debug:
+    var: "{{ groups['overlaynetwork'] | length }}"
+  tags:
+    - glustertest
+  when:
+    - glustermaster is defined
+    - glustermaster
+
+- set_fact:
+    gluster__cluster_nodes: "{{ gluster__cluster_nodes + [ hostvars[item].overlaynetwork_ipv4_address | split('/') | first ] }}"
+  tags:
+    - glustertest
+  with_items: " {{ groups['overlaynetwork'] }} "
+  when:
+    - glustermaster is defined
+    - glustermaster
+#    - hostvars[item].inventory_hostname != inventory_hostname
+
+- ansible.builtin.debug:
+    var: gluster__cluster_nodes
+  tags:
+    - glustertest
+  when:
+    - glustermaster is defined
+    - glustermaster
+
+# Force has to be added, because the brick is stored on the rootfs. This is fine because this is just a
+# a test setup. In Prod one would use a separate partition or even better a separate disk drive...
+- name: create gluster volume
+  gluster.gluster.gluster_volume:
+    state: started
+    name: "{{ overlaynetworkname }}_gluster"
+    bricks: "/glusterfs/{{ overlaynetworkname }}/"
+    cluster: "{{ gluster__cluster_nodes }}"
+    replicas: "{{ groups['overlaynetwork'] | length }}"
+#    rebalance: yes
+    force: yes
+  when:
+    - glustermaster is defined
+    - glustermaster
+  run_once: true
+
+
+- name: Create directory for mouting the glusterfs
+  ansible.builtin.file:
+    path: /opt/docker/
+    owner: root
+    group: root
+    mode: '0775'
+    state: directory
+
+- name: Mount the glusterfs volume
+  ansible.posix.mount:
+    path: /opt/docker
+    src: localhost:/dockerswarm1_gluster
+    fstype: glusterfs
+    state: mounted
+    boot: yes

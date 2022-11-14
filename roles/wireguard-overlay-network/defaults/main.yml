@@ -1,0 +1,7 @@
+---
+# defaults file for wireguard-overlay-network
+wgoverlay__packages_debian:
+  - wireguard
+  - wireguard-dkms
+  - wireguard-tools
+

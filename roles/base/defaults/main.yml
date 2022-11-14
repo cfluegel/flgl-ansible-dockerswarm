@@ -1,0 +1,36 @@
+---
+# defaults file for base
+base__packages_debian:
+  - htop
+  - sudo
+  - git
+  - neovim
+  - python3
+  - ufw
+  - fail2ban
+  - curl
+  - tzdata
+
+base__timezone: "Etc/UTC"
+
+base__users:
+  - username: cfluegel
+    sudo: yes
+
+base__sshkeys:
+  - username: cfluegel
+    sshkeys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCWmWCilTjtjYmIgVxdGWPGCIm/vbMl36Kqdvy/G3V/yIyznG1XZlQT1Ws/h2gWPM2Wk69vyocsN2xTrcfEK937qMycVkqTL+pYZrmnSIL4pVFzEieUOS8mDlXLb2z8yA9LJ5Vzys20q7Ykyq9dq8YgKXx+prQ568V2qAMALpYTHnXVw5ttNQuMO+R6ewCZGD1546/V2/lkqi/mN7VhGY1LcyO1U4MBrrhHoE6vfuJ5luVFGF8vfzZNnqFcxSa75TQKb/AWfi1hjt99/NCQ/T1aKOMQ9BT04E+H500gwyWkwkymwr9pFa5zm6ldEoliaUbNTYt+t/7wPELYNGDj3uf/DRgEjAsF+jHkqC5syluufPri8f6F3B8mqCHpy0B05cK92oWLPMk+bI//PoKU74dDplUHP2K+0ef/0OxOxyYtuEz1IamxuOl+u+vGKBrAarapNElgKF1GRgoFnMtgjdo3TjOrGBiM7yQyKfe1N1DZFPBYEGOwvQDpNDTIneSfcj8= iPad Key"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINewPvxOHO13C96eul6rBrcfU4f7v3dA4lFXH7+sHHd9 cfluegel@skathi"
+      - "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIC+/ZtfqdgMY3fKovAMOPvLtaOkrkydEwzuQ2OcWeYlpAAAABHNzaDo= ssh:"
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQChQZLV+psyhtxOARC5AU4xhZN2Uw6Imy6Rw1CyE9YG26E5DGICRjHftNPcm6u6mmrcIsc1Jo1GCrHEa+Qo0RHqATLsVoFXdA2NU1LA28QXQ/OhaODJIqNdc16upgRHQmmpZ31YgHGczEH3xZkCZSqr+PpXx7cQb/1aPt63bD5yobAMhRtZxzzMQYXpTumiPKoj/tdVezxPdS0lxXpgJy681HtE/1jQN4D7DBmXJKLJxuow0/p/ZWg0uYm50jIdfsrsG8C6ypqh9jE2Qt8lE1P136YNnyf3BjKf9lb6nlAJrwxlNnZyfQCF0bt8CHf+AQhZWSYxXRdlempaqYTiYfRRbbcFhogosTtvvWb0/I4lGDHA2LpXlyf/61vbaTnnVDcxuvtYMHPFCXnvgs5Wwo3LJG+qmCtSjEDjcDbBa/+Io2aGEHpuURBZN2GYJG8IY0+4u4HU6+IGy8NUFvrfI3C4FNSZIc/kg3HRRmjBnJhFrnPcQyUjv3DrLC0u3h0nQMs= cfluegel@Mac-mini-von-Christoph.local"
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDaQQPlplZ1yFkGeAWUvEYTWlQ/XccghTb1z1uGr1n+HZMhUa9kKhEf6cIjeuReVp08Gmrm2NTuz9cyYbbRBW6ihJFRRMIPqLNFMSBZ5SE8uYZmw1xAhykMjAXtlz9J7EkR8lCX21461zRvYAALcmvOBvmcnecvb09DgQSjeROC0GYX8mCzhtj8OiYu+F3idHHs0HcMD76wiq991ZaX6yYXdW3t9Eg8qpfmfat+p+Gce6kL7sgT86qWPRB47+aQ66MjgW0MVioJM2ZmwNSZjB2cvY/ahhA8uoUBbzTEGL/ES90ucj6rNY9/TEGT5OValA/isUNizuPMXHZhjUmqGDpR root@cfluegel-ThinkPad-Edge-E330"
+  - username: root
+    sshkeys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCWmWCilTjtjYmIgVxdGWPGCIm/vbMl36Kqdvy/G3V/yIyznG1XZlQT1Ws/h2gWPM2Wk69vyocsN2xTrcfEK937qMycVkqTL+pYZrmnSIL4pVFzEieUOS8mDlXLb2z8yA9LJ5Vzys20q7Ykyq9dq8YgKXx+prQ568V2qAMALpYTHnXVw5ttNQuMO+R6ewCZGD1546/V2/lkqi/mN7VhGY1LcyO1U4MBrrhHoE6vfuJ5luVFGF8vfzZNnqFcxSa75TQKb/AWfi1hjt99/NCQ/T1aKOMQ9BT04E+H500gwyWkwkymwr9pFa5zm6ldEoliaUbNTYt+t/7wPELYNGDj3uf/DRgEjAsF+jHkqC5syluufPri8f6F3B8mqCHpy0B05cK92oWLPMk+bI//PoKU74dDplUHP2K+0ef/0OxOxyYtuEz1IamxuOl+u+vGKBrAarapNElgKF1GRgoFnMtgjdo3TjOrGBiM7yQyKfe1N1DZFPBYEGOwvQDpNDTIneSfcj8= iPad Key"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINewPvxOHO13C96eul6rBrcfU4f7v3dA4lFXH7+sHHd9 cfluegel@skathi"
+      - "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIC+/ZtfqdgMY3fKovAMOPvLtaOkrkydEwzuQ2OcWeYlpAAAABHNzaDo= ssh:"
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQChQZLV+psyhtxOARC5AU4xhZN2Uw6Imy6Rw1CyE9YG26E5DGICRjHftNPcm6u6mmrcIsc1Jo1GCrHEa+Qo0RHqATLsVoFXdA2NU1LA28QXQ/OhaODJIqNdc16upgRHQmmpZ31YgHGczEH3xZkCZSqr+PpXx7cQb/1aPt63bD5yobAMhRtZxzzMQYXpTumiPKoj/tdVezxPdS0lxXpgJy681HtE/1jQN4D7DBmXJKLJxuow0/p/ZWg0uYm50jIdfsrsG8C6ypqh9jE2Qt8lE1P136YNnyf3BjKf9lb6nlAJrwxlNnZyfQCF0bt8CHf+AQhZWSYxXRdlempaqYTiYfRRbbcFhogosTtvvWb0/I4lGDHA2LpXlyf/61vbaTnnVDcxuvtYMHPFCXnvgs5Wwo3LJG+qmCtSjEDjcDbBa/+Io2aGEHpuURBZN2GYJG8IY0+4u4HU6+IGy8NUFvrfI3C4FNSZIc/kg3HRRmjBnJhFrnPcQyUjv3DrLC0u3h0nQMs= cfluegel@Mac-mini-von-Christoph.local"
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDaQQPlplZ1yFkGeAWUvEYTWlQ/XccghTb1z1uGr1n+HZMhUa9kKhEf6cIjeuReVp08Gmrm2NTuz9cyYbbRBW6ihJFRRMIPqLNFMSBZ5SE8uYZmw1xAhykMjAXtlz9J7EkR8lCX21461zRvYAALcmvOBvmcnecvb09DgQSjeROC0GYX8mCzhtj8OiYu+F3idHHs0HcMD76wiq991ZaX6yYXdW3t9Eg8qpfmfat+p+Gce6kL7sgT86qWPRB47+aQ66MjgW0MVioJM2ZmwNSZjB2cvY/ahhA8uoUBbzTEGL/ES90ucj6rNY9/TEGT5OValA/isUNizuPMXHZhjUmqGDpR root@cfluegel-ThinkPad-Edge-E330"
+
+base__enableUFW: true

@@ -1,0 +1,37 @@
+---
+### Dockerswarm 1
+managers1:
+  hosts:
+    m1.s1.flgl.tech:
+      overlaynetwork_ipv4_address: 192.168.251.10/32
+      machinevariable1: example
+      glustermaster: true
+
+workers1:
+  hosts:
+    w1.s1.flgl.tech:
+      overlaynetwork_ipv4_address: 192.168.251.50/32
+    w2.s1.flgl.tech:
+      overlaynetwork_ipv4_address: 192.168.251.51/32
+    w3.s1.flgl.tech:
+      overlaynetwork_ipv4_address: 192.168.251.52/32
+
+dockerswarm1:
+  children:
+    managers1:
+    workers1:
+  vars:
+    overlaynetwork_recreate_force: true
+    overlaynetworkname: dockerswarm1
+    overlay_additional_hosts: []
+    overlay_network_port: 39923
+#      sample format of entries
+#      - name:
+#        wg_public_key:
+#        overlaynetwork_ipv4_address: 192.168.251.100/32
+### Dockerswarm 1
+
+### no nicht ganz klar wie ich das später mache...
+overlaynetwork:
+  children:
+    dockerswarm1

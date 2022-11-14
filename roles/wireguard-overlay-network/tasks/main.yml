@@ -1,0 +1,135 @@
+---
+# tasks file for wireguard-overlay-network
+
+- name: Install required wireguard packagaes
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ wgoverlay__packages_debian }}"
+
+
+### Create Private and Public Key Files
+- name: Check if Wireguard base directory exists
+  ansible.builtin.stat:
+    path: /etc/wireguard
+  register: check_wg_confdir
+
+- name: "... create it if it has not been created during installation"
+  ansible.builtin.file:
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+    path: /etc/wireguard
+  when: check_wg_confdir.stat.exists != True
+
+### Shall we restart?
+- name: Change file permission of both files
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - /etc/wireguard/{{ overlaynetworkname }}_privatekey
+    - /etc/wireguard/{{ overlaynetworkname }}_publickey
+  when:
+    - overlaynetwork_recreate_force
+
+### Check the existens of the private key for this network
+- name: Check if the Wireguard Private Key for the overlay network exists
+  ansible.builtin.stat:
+    path: /etc/wireguard/{{ overlaynetworkname }}_privatekey
+  register: check_wg_privatekey
+
+- name: "... create it if it does not"
+  ansible.builtin.shell:
+    cmd: /usr/bin/wg genkey > /etc/wireguard/{{ overlaynetworkname }}_privatekey
+  when:
+    - check_wg_privatekey.stat.exists != True
+
+### Check existens of public key
+- name: Check if the Wireguard Public Key for the overlay network exists
+  ansible.builtin.stat:
+    path: /etc/wireguard/{{ overlaynetworkname }}_publickey
+  register: check_wg_publickey
+
+- name: "... create it if it does not"
+  ansible.builtin.shell:
+    cmd: /usr/bin/wg pubkey < /etc/wireguard/{{ overlaynetworkname }}_privatekey > /etc/wireguard/{{ overlaynetworkname }}_publickey
+  when:
+    - check_wg_publickey.stat.exists != True
+
+- name: Change file permission of both files
+  ansible.builtin.file:
+    mode: '0600'
+    path: '{{ item }}'
+    state: file
+  loop:
+    - /etc/wireguard/{{ overlaynetworkname }}_privatekey
+    - /etc/wireguard/{{ overlaynetworkname }}_publickey
+
+
+### Gather all the private and public keys and set them as facts
+- name: Read and register public wireguard key
+  ansible.builtin.shell: cat /etc/wireguard/{{ overlaynetworkname }}_publickey
+  register: wg_public_key
+
+- name: Read and register public wireguard key
+  ansible.builtin.shell: cat /etc/wireguard/{{ overlaynetworkname }}_privatekey
+  register: wg_private_key
+
+### Debug output
+- name: Output the public Wireguard Key of each host
+  ansible.builtin.debug:
+    var: wg_public_key.stdout
+
+- name: Output the private Wireguard Key of each host
+  ansible.builtin.debug:
+    var: wg_private_key.stdout
+
+### Generate Config
+- name: Generate wg0.conf
+  ansible.builtin.template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    owner: root
+    group: root
+    mode: '0600'
+  when: inventory_hostname in groups['overlaynetwork']
+  register: check_wg_wg0config
+
+- name: Remove wg0.conf if host is not in overlaynetwork group
+  ansible.builtin.file:
+    state: absent
+    path: /etc/wireguard/wg0.conf
+  when: inventory_hostname not in groups['overlaynetwork']
+
+### Enable the UFW Firewall
+- name: Allow the wireguard Port in UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ overlay_network_port }}"
+    proto: udp
+  when: inventory_hostname  in groups['overlaynetwork']
+
+# - name: Allow communication on the wg0 interface
+#   community.general.ufw:
+#     rule: allow
+#     interface_in: wg0
+#     interface_out: wg0
+#     route: yes
+#   when: inventory_hostname  in groups['overlaynetwork']
+
+- name: Allow communication on the wg0 interface
+  community.general.ufw:
+    rule: allow
+    direction: in
+    interface: wg0
+  when: inventory_hostname  in groups['overlaynetwork']
+
+### Let it start
+- name: Enable the wireguard quick service for wg0.conf
+  ansible.builtin.service:
+    enabled: yes
+    state: restarted
+    name: wg-quick@wg0
+  when: inventory_hostname in groups['overlaynetwork']

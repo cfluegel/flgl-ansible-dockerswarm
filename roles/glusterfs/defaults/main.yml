@@ -1,0 +1,8 @@
+---
+# defaults file for glusterfs
+glusterfs__packages_debian:
+  - glusterfs-client
+  - glusterfs-server
+  - glusterfs-common
+
+gluster__cluster_nodes: []

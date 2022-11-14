@@ -1,0 +1,24 @@
+[Interface]
+Address =  {{ overlaynetwork_ipv4_address }}
+PrivateKey = {{ wg_private_key.stdout }}
+ListenPort = {{ overlay_network_port }}
+
+{% for host in groups['overlaynetwork'] %}
+[Peer]
+Endpoint = {{ hostvars[host].inventory_hostname }}:{{ overlay_network_port }}
+PublicKey = {{ hostvars[host].wg_public_key.stdout }}
+AllowedIPs = {{ hostvars[host].overlaynetwork_ipv4_address | trim }}
+PersistentKeepalive = 60
+
+{% endfor %}
+
+
+### Additionally allowed hosts:
+{% for host in overlay_additional_hosts %}
+[Peer]
+# {{ host.name }}
+PublicKey = {{ host.wg_public_key }}
+AllowedIPs = {{ host.overlaynetwork_ipv4_address | trim }}
+PersistentKeepalive = 60
+
+{% endfor %}
